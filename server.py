@@ -5,25 +5,23 @@ import hashlib
 import sqlite3
 import ssl
 
-HORASDELOSMENSAJES = []
 
+HORASDELOSMENSAJES = []
+MY_CLAVE = input("Introduzca la clave para la comprobación de integridad: ")
 HEADER_LENGTH = 10
 IP = "127.0.0.1"
 PORT = 1234
 
 
-
-MY_CLAVE = input("Clave para la conexion: ").encode()
-
-
-
-
-
-
 server_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1) #reuse puerto
+server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
 
 server_socket.bind((IP,PORT))
+server_socket = ssl.wrap_socket(server_socket,
+                                server_side=True,
+                                certfile="./certificados/server.crt",
+                                keyfile="./certificados/server.key",
+                                ssl_version=ssl.PROTOCOL_TLSv1)
 server_socket.listen()
 
 sockets_list = [server_socket]
@@ -39,7 +37,9 @@ def checkReplayAttack(message):
         return True
 
 def checkIntegridadMensaje(message,mac):
-    calculada = hmac.digest(MY_CLAVE,message,hashlib.sha3_512).hex()
+    print(message)
+    print(mac)
+    calculada = hmac.digest(MY_CLAVE, message, hashlib.sha3_512).hex()
     print(calculada)
     print(mac)
     if calculada == mac.decode('utf-8'):
@@ -75,11 +75,7 @@ while True:
         if notified_socket == server_socket:
             #Se ha conectado al servidor
 
-            server_socket = ssl.wrap_socket(server_socket,
-                                            server_side=True,
-                                            certfile="./certificados/server.crt",
-                                            keyfile="./certificados/server.key",
-                                            ssl_version=ssl.PROTOCOL_TLSv1)
+
 
 
             client_socket, client_adress = server_socket.accept()
@@ -115,13 +111,13 @@ while True:
             print(f"Mensaje MAC recibido desde {user['data'].decode('utf-8')}: {message2['data'].decode('utf-8')}")
 
 
-            if checkIntegridadMensaje(message['data'],message2['data']):
-                if checkReplayAttack(message['data']):
-                    print("OK, integridad confirmada")
-                else:
-                    print("Ataque de replay detectado!!")
-            else:
-                print("NOPE, integridad comprometida")
+            # if checkIntegridadMensaje(message['data'],message2['data']):
+            #     if checkReplayAttack(message['data']):
+            #         print("OK, integridad confirmada")
+            #     else:
+            #         print("Ataque de replay detectado!!")
+            # else:
+            #     print("NOPE, integridad comprometida")
 
 
 

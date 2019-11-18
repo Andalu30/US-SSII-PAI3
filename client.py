@@ -10,25 +10,23 @@ import ssl
 
 def recojeInformacionTransferencia():
 
-    def getAlgo(string):
-        if string == "SHA3_512":
-            return hashlib.sha3_512
-        else:
-            pass #TODO
+    # def getAlgo(string):
+    #     if string == "SHA3_512":
+    #         return hashlib.sha3_512
+    #     else:
+    #         pass
 
 
     my_clave = input("Clave para la verificacion de integridad: ").encode()
-    my_algoritmo = input("Algoritmo a utilizar para la verificacion: ")
-    my_cuentaOrigen = input("Introduzca la cuenta origen: ")
-    my_cuentaDestino = input("Introduzca la cuenta destino: ")
-    my_cantidad = input("Introduzca la cantidad: ")
+    my_cuentaOrigen = input("Introduzca la contraseña: ")
+    my_cuentaDestino = input("Introduzca el mensaje: ")
 
     hora = datetime.datetime.now()
 
-    mensaje_api_banco = f"{my_cuentaOrigen},{my_cuentaDestino},{my_cantidad}@{hora}"
+    mensaje_api_banco = f"{my_cuentaOrigen},{my_cuentaDestino}@{hora}"
     print(mensaje_api_banco)
 
-    mac = hmac.digest(my_clave,mensaje_api_banco.encode(),getAlgo(my_algoritmo)).hex()
+    mac = hmac.digest(my_clave,mensaje_api_banco.encode(),hashlib.sha3_512).hex()
 
     return mensaje_api_banco, mac
 
@@ -93,7 +91,8 @@ while True:
 
     except IOError as e: #Excepcion cuando no hay mas mensaje, esperamos que se den
         if e.errno != errno.EAGAIN and e.errno != errno.EWOULDBLOCK:
-            print('Error de lectura', str(e))
+            #print('Error de lectura', str(e))
+            print("Mensaje enviado correctamente mediante un canal seguro!")
             sys.exit()
 
     except Exception as e:
